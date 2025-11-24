@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent   # ~/myapp
 with open(BASE_DIR / "myapp" / ".streamlit" / "secrets.toml", "rb") as f:
     secrets = tomllib.load(f)
 
-db_conf = secrets["mysql"]
+db_conf = secrets["mysql_weather"]
 owm_conf = secrets["openweather"]
 
 API_KEY = owm_conf["api_key"]

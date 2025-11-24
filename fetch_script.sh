@@ -24,5 +24,11 @@ if [ -f "fetch_weather.py" ]; then
 else
  echo "fetch_weather.py ei löytynyt!"
 fi
-
+# Suorita fetch_price.py
+if [ -f "fetch_price.py" ]; then
+ echo "Suoritetaan fetch_price.py..."
+ python fetch_price.py
+else
+ echo "fetch_price.py ei löytynyt!"
+fi
 echo "Valmis!"

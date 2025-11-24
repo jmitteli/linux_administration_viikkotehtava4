@@ -7,7 +7,7 @@ import plotly.express as px
 @st.cache_data(ttl=60)
 def load_owm_data():
     """Lataa OpenWeather-datan owm_weather-taulusta."""
-    db_conf = st.secrets["mysql"]
+    db_conf = st.secrets["mysql_weather"]
 
     conn = mysql.connector.connect(
         host=db_conf["host"],
