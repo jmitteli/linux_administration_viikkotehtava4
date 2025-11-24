@@ -1,4 +1,5 @@
 #!/bin/bash
+cd /home/ubuntu/myapp || exit 1
 # Polku virtuaaliympäristöön
 VENV_DIR="venv"
 # Luo virtuaaliympäristö, jos ei ole olemassa
