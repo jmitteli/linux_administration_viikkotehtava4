@@ -1,53 +1,67 @@
 import streamlit as st
 import pandas as pd
-from sqlalchemy import create_engine
+import mysql.connector
 import plotly.express as px
 
 
-@st.cache_data
-def load_data():
-    # luetaan tiedot secretsistä
+@st.cache_data(ttl=60)
+def load_owm_data():
+    """Lataa OpenWeather-datan owm_weather-taulusta."""
     db_conf = st.secrets["mysql"]
-    user = db_conf["user"]
-    password = db_conf["password"]
-    host = db_conf["host"]
-    database = db_conf["database"]
 
-    engine = create_engine(
-        f"mysql+pymysql://{user}:{password}@{host}/{database}?charset=utf8mb4"
+    conn = mysql.connector.connect(
+        host=db_conf["host"],
+        user=db_conf["user"],
+        password=db_conf["password"],
+        database=db_conf["database"],
     )
 
     query = """
-        SELECT station, year, month, day, time_local, temp_c
-        FROM weatherdata
+        SELECT city, temperature, description, timestamp
+        FROM owm_weather
+        ORDER BY timestamp
     """
-    df = pd.read_sql(query, engine)
 
-    df["datetime"] = pd.to_datetime(
-        df["year"].astype(str)
-        + "-"
-        + df["month"].astype(str)
-        + "-"
-        + df["day"].astype(str)
-        + " "
-        + df["time_local"] + ":00"
-    )
-    df = df.sort_values("datetime")
+    df = pd.read_sql(query, conn)
+    conn.close()
+
+    # Muutetaan aikaleimat oikeaksi datetime-tyypiksi ja järjestetään
+    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    df = df.sort_values("timestamp")
+
     return df
 
 
 def main():
-    st.title("Lämpötilan kehitys – Oulu Vihreäsaari satama")
-    df = load_data()
+    st.title("OpenWeather – lämpötilan kehitys")
 
+    owm_df = load_owm_data()
+
+    if owm_df.empty:
+        st.warning("Tietokannassa ei ole vielä OpenWeather-dataa.")
+        return
+
+    # 1) Lämpötila käyränä
     fig = px.line(
-        df,
-        x="datetime",
-        y="temp_c",
-        labels={"datetime": "Aika", "temp_c": "Lämpötila (°C)"},
+        owm_df,
+        x="timestamp",
+        y="temperature",
+        labels={"timestamp": "Aika", "temperature": "Lämpötila (°C)"},
+        title="Lämpötilan kehitys (OpenWeather)"
     )
     st.plotly_chart(fig, use_container_width=True)
-    st.dataframe(df[["datetime", "temp_c"]])
+
+    # 2) Taulukko: 100 uusinta päivitystä
+    st.subheader("Viimeisimmät 100 päivitystä")
+
+    last100 = (
+        owm_df.sort_values("timestamp", ascending=False)
+              .head(100)
+              .reset_index(drop=True)
+    )
+    last100 = last100[["timestamp", "city", "temperature", "description"]]
+
+    st.dataframe(last100)
 
 
 if __name__ == "__main__":
