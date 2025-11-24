@@ -31,6 +31,32 @@ def load_owm_data():
 
     return df
 
+@st.cache_data(ttl=60)
+def load_price_data():
+    """Lataa sähkön spot-hinnan electricity_price-taulusta."""
+    db_conf = st.secrets["mysql_electricity"]
+
+    conn = mysql.connector.connect(
+        host=db_conf["host"],
+        user=db_conf["user"],
+        password=db_conf["password"],
+        database=db_conf["database"],
+    )
+
+    query = """
+        SELECT dt, rank_no, price_no_tax, price_with_tax
+        FROM electricity_price
+        ORDER BY dt
+    """
+
+    df = pd.read_sql(query, conn)
+    conn.close()
+
+    df["dt"] = pd.to_datetime(df["dt"])
+    df = df.sort_values("dt")
+
+    return df
+
 
 def main():
     st.title("Helsinki – lämpötilan kehitys")
@@ -63,6 +89,27 @@ def main():
 
     st.dataframe(last100)
 
+    # Käyrä hinnasta (sis. verot)
+    fig_price = px.line(
+        price_df,
+        x="dt",
+        y="price_with_tax",
+        labels={"dt": "Aika", "price_with_tax": "Hinta (€/kWh)"},
+        title="Sähkön spot-hinta (sis. verot)",
+    )
+    st.plotly_chart(fig_price, use_container_width=True)
+
+    # Taulukko: 20 viimeisintä hintaa
+    st.subheader("Viimeisimmät 20 hintaa")
+
+    last20 = (
+        price_df.sort_values("dt", ascending=False)
+                .head(20)
+                .reset_index(drop=True)
+    )
+    last20 = last20[["dt", "rank_no", "price_no_tax", "price_with_tax"]]
+
+    st.dataframe(last20)
 
 if __name__ == "__main__":
     main()
