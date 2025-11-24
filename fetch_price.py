@@ -8,7 +8,7 @@ from pathlib import Path
 
 # Luetaan sama secrets-tiedosto kuin Streamlit käyttää
 BASE_DIR = Path(__file__).resolve().parent  # /home/ubuntu/myapp
-with open(BASE_DIR / "myapp" / ".streamlit" / "secrets.toml", "rb") as f:
+with open(BASE_DIR / ".streamlit" / "secrets.toml", "rb") as f:
     secrets = tomllib.load(f)
 
 # Käytetään sähköhintoja varten määriteltyä blokkia
