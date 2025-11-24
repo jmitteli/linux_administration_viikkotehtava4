@@ -33,7 +33,7 @@ def load_owm_data():
 
 
 def main():
-    st.title("OpenWeather – lämpötilan kehitys")
+    st.title("Helsinki – lämpötilan kehitys")
 
     owm_df = load_owm_data()
 
@@ -47,7 +47,7 @@ def main():
         x="timestamp",
         y="temperature",
         labels={"timestamp": "Aika", "temperature": "Lämpötila (°C)"},
-        title="Lämpötilan kehitys (OpenWeather)"
+        title="Lämpötilan kehitys Helsingissä (OpenWeather)"
     )
     st.plotly_chart(fig, use_container_width=True)
 
