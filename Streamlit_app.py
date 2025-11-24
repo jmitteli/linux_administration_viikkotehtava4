@@ -89,6 +89,15 @@ def main():
 
     st.dataframe(last100)
 
+    # --- SÄHKÖHINTA ---
+    st.header("Sähkön spot-hinta (FI)")
+
+    price_df = load_price_data()
+
+    if price_df.empty:
+        st.warning("Tietokannassa ei ole vielä sähkön hintadataa.")
+        return
+
     # Käyrä hinnasta (sis. verot)
     fig_price = px.line(
         price_df,
