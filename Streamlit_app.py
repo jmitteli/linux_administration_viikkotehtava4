@@ -59,6 +59,15 @@ def load_price_data():
 
 
 def main():
+
+    # Päivitä sivu 5 minuutin välein (300 sekuntia)
+    st.markdown(
+        """
+        <meta http-equiv="refresh" content="300">
+        """,
+        unsafe_allow_html=True,
+    )
+
     st.title("Helsinki – lämpötilan kehitys")
 
     owm_df = load_owm_data()
